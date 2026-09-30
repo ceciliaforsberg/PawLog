@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="PawLog.Api/PawLog.Api.csproj" />
+  <Project Path="PawLog.Data/PawLog.Data.csproj" />
+  <Project Path="PawLog.Models/PawLog.Models.csproj" />
+</Solution>
