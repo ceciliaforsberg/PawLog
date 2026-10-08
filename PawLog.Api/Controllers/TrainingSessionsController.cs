@@ -77,7 +77,7 @@ public class TrainingSessionsController: ControllerBase
         }
 
         var exercise = await _context.Exercises.FindAsync(request.ExerciseId);
-        if (exercise == null)
+        if (exercise == null || exercise.IsArchived)
         {
             return BadRequest($"Exercise with ID {request.ExerciseId} not found");
         }
@@ -131,6 +131,12 @@ public class TrainingSessionsController: ControllerBase
         if (exercise == null)
         {
             return BadRequest($"Exercise with ID {request.ExerciseId} not found");
+        }
+
+        var isChangingExercise = exercise.Id != session.ExerciseId;
+        if (isChangingExercise && exercise.IsArchived)
+        {
+            return BadRequest($"Cannot change to archived exercise with ID {request.ExerciseId}");
         }
 
         session.Date = request.Date;
