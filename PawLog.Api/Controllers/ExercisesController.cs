@@ -16,11 +16,19 @@ public class ExercisesController: ControllerBase
     public ExercisesController(PawLogDbContext context) => _context = context;
 
     [HttpGet]
-    public async Task<ActionResult<List<ExerciseResponse>>> GetAll()
+    public async Task<ActionResult<List<ExerciseResponse>>> GetAll([FromQuery] bool includeArchived = false)
     {
-        var exercises = await _context.Exercises
-            .Select(e => new ExerciseResponse(e.Id, e.Name, e.Description))
+        var query = _context.Exercises.AsQueryable();
+
+        if (!includeArchived)
+        {
+            query = query.Where(e => !e.IsArchived);
+        }
+
+        var exercises = await query
+            .Select(exercise => new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description, exercise.IsArchived))
             .ToListAsync();
+
         return Ok(exercises);
     }
 
@@ -32,7 +40,8 @@ public class ExercisesController: ControllerBase
         {
             return NotFound();
         }
-        return Ok(new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description));
+
+        return Ok(new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description, exercise.IsArchived));
     }
 
     [HttpPost]
@@ -46,8 +55,8 @@ public class ExercisesController: ControllerBase
 
         _context.Exercises.Add(exercise);
         await _context.SaveChangesAsync();
+        var exerciseResponse = new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description, exercise.IsArchived);
 
-        var exerciseResponse = new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description);
         return CreatedAtAction(nameof(GetById), new { id = exercise.Id }, exerciseResponse);
     }
 
@@ -63,7 +72,8 @@ public class ExercisesController: ControllerBase
         exercise.Description = request.Description;
 
         await _context.SaveChangesAsync();
-        var updatedExerciseResponse = new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description);
+        var updatedExerciseResponse = new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description, exercise.IsArchived);
+
         return Ok(updatedExerciseResponse);
     }
 
@@ -75,8 +85,10 @@ public class ExercisesController: ControllerBase
         {
             return NotFound();
         }
-        _context.Exercises.Remove(exercise);
+        
+        exercise.IsArchived = true;
         await _context.SaveChangesAsync();
+
         return NoContent();
     }
 }   
