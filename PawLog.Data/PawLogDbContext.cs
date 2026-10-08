@@ -13,5 +13,14 @@ namespace PawLog.Data
         public DbSet<Dog> Dogs => Set<Dog>();
         public DbSet<Exercise> Exercises => Set<Exercise>();
         public DbSet<TrainingSession> TrainingSessions => Set<TrainingSession>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<TrainingSession>()
+                .HasOne(ts => ts.Exercise)
+                .WithMany()
+                .HasForeignKey(ts => ts.ExerciseId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }

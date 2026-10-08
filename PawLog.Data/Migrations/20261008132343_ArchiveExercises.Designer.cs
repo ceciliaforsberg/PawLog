@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PawLog.Data;
 
@@ -11,9 +12,11 @@ using PawLog.Data;
 namespace PawLog.Data.Migrations
 {
     [DbContext(typeof(PawLogDbContext))]
-    partial class PawLogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261008132343_ArchiveExercises")]
+    partial class ArchiveExercises
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
