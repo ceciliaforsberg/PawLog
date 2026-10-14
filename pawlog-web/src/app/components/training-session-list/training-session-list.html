@@ -1,0 +1,30 @@
+<h2>Träningspass</h2>
+
+@if (trainingSessions().length === 0) {
+  <p>Inga träningspass hittades.</p>
+} @else {
+    <table>
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Hund</th>
+                <th>Övning</th>
+                <th>Repetitioner</th>
+                <th>Betyg</th>
+                <th>Anteckningar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (session of trainingSessions(); track session.id) {
+                <tr>
+                    <td>{{ session.date | date: 'yyyy-MM-dd HH:mm' }}</td>
+                    <td>{{ session.dogName }}</td>
+                    <td>{{ session.exerciseName }}</td>
+                    <td>{{ session.repetitions }}</td>
+                    <td>{{ session.rating }}</td>
+                    <td>{{ session.notes }}</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
