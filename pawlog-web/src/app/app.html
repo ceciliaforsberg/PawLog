@@ -1,2 +1,3 @@
 <h1>PawLog</h1>
-<app-training-session-list></app-training-session-list>
+<app-training-session-form (created)="list.load()"/>
+<app-training-session-list #list/>

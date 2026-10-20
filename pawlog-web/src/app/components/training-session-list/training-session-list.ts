@@ -14,8 +14,13 @@ export class TrainingSessionList implements OnInit {
   trainingSessions = signal<TrainingSession[]>([]);
 
   ngOnInit(): void {
-    this.trainingSessionApi.getAll().subscribe(data => {
-      this.trainingSessions.set(data);
-    });
+    this.load();
+  }
+
+  load(): void {
+    this.trainingSessionApi.getAll().subscribe({
+      next: data => this.trainingSessions.set(data),
+      error: err => console.error('Failed to load training sessions', err),
+    }); 
   }
 }

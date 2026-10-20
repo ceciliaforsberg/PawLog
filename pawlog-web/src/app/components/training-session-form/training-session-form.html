@@ -1,0 +1,54 @@
+<h2>Nytt träningspass</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+    <label>
+        Datum och tid
+        <input type="datetime-local" formControlName="date">
+    </label>
+
+    <label>
+        Hund
+        <select formControlName="dogId">
+            <option [ngValue]="null">Välj hund</option>
+            @for (dog of dogs(); track dog.id) {
+                <option [ngValue]="dog.id">{{ dog.name }}</option>
+            }
+        </select>
+    </label>
+
+    <label>
+        Övning
+        <select formControlName="exerciseId">
+            <option [ngValue]="null">Välj övning</option>
+            @for (exercise of exercises(); track exercise.id) {
+                <option [ngValue]="exercise.id">{{ exercise.name }}</option>
+            }
+        </select>
+    </label>
+
+    <label>
+        Repetitioner
+        <input type="number" formControlName="repetitions" min="1" />
+    </label>
+
+    <label>
+        Betyg (1-5)
+        <input type="number" formControlName="rating" min="1" max="5" />
+    </label>
+
+    <label>
+        Belöning
+        <input type="text" formControlName="reward" />
+    </label>
+
+    <label>
+        Anteckningar
+        <textarea formControlName="notes"></textarea>
+    </label>
+
+    @if (errorMessage()) {
+        <p class="error">{{ errorMessage }}</p>
+    }
+
+    <button type="submit" [disabled]="form.invalid">Spara</button>
+</form>

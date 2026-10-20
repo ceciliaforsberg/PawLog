@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TrainingSessionList } from './components/training-session-list/training-session-list';
+import { TrainingSessionForm } from './components/training-session-form/training-session-form';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TrainingSessionList],
+  imports: [ TrainingSessionList, TrainingSessionForm],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
