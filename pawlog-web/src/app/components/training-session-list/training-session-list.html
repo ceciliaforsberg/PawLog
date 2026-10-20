@@ -1,5 +1,15 @@
 <h2>Träningspass</h2>
 
+<label>
+    Filtrera på hund
+    <select #dogSelect (change)="onDogChange(dogSelect.value)">
+        <option value="">Alla hundar</option>
+        @for (dog of dogs(); track dog.id) {
+            <option [value]="dog.id">{{ dog.name }}</option>
+        }
+    </select>
+</label>
+
 @if (trainingSessions().length === 0) {
   <p>Inga träningspass hittades.</p>
 } @else {
