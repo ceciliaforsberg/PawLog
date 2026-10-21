@@ -1,3 +1,19 @@
-<h1>PawLog</h1>
-<app-training-session-form (created)="list.load()"/>
-<app-training-session-list #list/>
+<header>
+    <div class="header-inner">
+        <div class="logo">🐾</div>
+        <div>
+            <h1>PawLog</h1>
+            <p class="tagline">Träningsdagboken för din hund</p>
+        </div>  
+    </div>
+</header>
+
+<main>
+    <section class="card">
+        <app-training-session-form (created)="list.load()"/>    
+    </section>
+
+    <section class="card">
+        <app-training-session-list #list/>
+    </section>
+</main>
