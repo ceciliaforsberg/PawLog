@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PawLog.Api.Requests.Exercises;
-using PawLog.Api.Responses.Exercises;
-using PawLog.Data;
-using PawLog.Models;
+using PawLog.Services.Interfaces;
+using PawLog.Services.Requests.Exercises;
+using PawLog.Services.Responses.Exercises;
 
 namespace PawLog.Api.Controllers;
 
@@ -11,84 +9,40 @@ namespace PawLog.Api.Controllers;
 [Route("api/[controller]")]
 public class ExercisesController: ControllerBase
 {
-    private readonly PawLogDbContext _context;
-
-    public ExercisesController(PawLogDbContext context) => _context = context;
+    private readonly IExerciseService _exerciseService;
+    public ExercisesController(IExerciseService exerciseService) => _exerciseService = exerciseService;
 
     [HttpGet]
     public async Task<ActionResult<List<ExerciseResponse>>> GetAll([FromQuery] bool includeArchived = false)
     {
-        var query = _context.Exercises.AsQueryable();
-
-        if (!includeArchived)
-        {
-            query = query.Where(e => !e.IsArchived);
-        }
-
-        var exercises = await query
-            .Select(exercise => new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description, exercise.IsArchived))
-            .ToListAsync();
-
-        return Ok(exercises);
+        return Ok(await _exerciseService.GetAllAsync(includeArchived));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ExerciseResponse>> GetById(int id)
     {
-        var exercise = await _context.Exercises.FindAsync(id);
-        if (exercise == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description, exercise.IsArchived));
+        var exercise = await _exerciseService.GetByIdAsync(id);
+        return exercise is null ? NotFound() : Ok(exercise);
     }
 
     [HttpPost]
     public async Task<ActionResult<ExerciseResponse>> Create(CreateExerciseRequest request)
     {
-        var exercise = new Exercise
-        {
-            Name = request.Name,
-            Description = request.Description
-        };
-
-        _context.Exercises.Add(exercise);
-        await _context.SaveChangesAsync();
-        var exerciseResponse = new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description, exercise.IsArchived);
-
-        return CreatedAtAction(nameof(GetById), new { id = exercise.Id }, exerciseResponse);
+        var created = await _exerciseService.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<ExerciseResponse>> Update(int id, UpdateExerciseRequest request)
     {
-        var exercise = await _context.Exercises.FindAsync(id);
-        if (exercise == null)
-        {
-            return NotFound();
-        }
-        exercise.Name = request.Name;
-        exercise.Description = request.Description;
-
-        await _context.SaveChangesAsync();
-        var updatedExerciseResponse = new ExerciseResponse(exercise.Id, exercise.Name, exercise.Description, exercise.IsArchived);
-
-        return Ok(updatedExerciseResponse);
+        var updated = await _exerciseService.UpdateAsync(id, request);
+        return updated is null ? NotFound() : Ok(updated);
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        var exercise = await _context.Exercises.FindAsync(id);
-        if (exercise == null)
-        {
-            return NotFound();
-        }
-        
-        exercise.IsArchived = true;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        var archived = await _exerciseService.ArchiveAsync(id);
+        return archived ? NoContent() : NotFound();
     }
 }   
