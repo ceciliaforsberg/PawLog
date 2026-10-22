@@ -1,4 +1,4 @@
-﻿namespace PawLog.Api.Responses.TrainingSessions
+﻿namespace PawLog.Services.Responses.TrainingSessions
 {
     public record TrainingSessionResponse(
         int Id,

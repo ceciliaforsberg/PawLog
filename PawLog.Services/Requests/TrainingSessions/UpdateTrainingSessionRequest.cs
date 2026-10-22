@@ -1,6 +1,6 @@
-﻿namespace PawLog.Api.Requests.TrainingSessions
+﻿namespace PawLog.Services.Requests.TrainingSessions
 {
-    public record CreateTrainingSessionRequest(
+    public record UpdateTrainingSessionRequest(
         DateTime Date,
         int Repetitions,
         string? Reward,

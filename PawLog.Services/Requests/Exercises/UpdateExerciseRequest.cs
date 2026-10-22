@@ -1,4 +1,4 @@
-﻿namespace PawLog.Api.Requests.Exercises
+﻿namespace PawLog.Services.Requests.Exercises
 {
     public record UpdateExerciseRequest(string Name, string? Description);
 }

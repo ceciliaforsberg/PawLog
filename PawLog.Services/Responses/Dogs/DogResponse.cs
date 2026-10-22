@@ -1,4 +1,4 @@
-﻿namespace PawLog.Api.Responses.Dogs
+﻿namespace PawLog.Services.Responses.Dogs
 {
     public record DogResponse(int Id, string Name, string? Breed, DateOnly? DateOfBirth);
 }
