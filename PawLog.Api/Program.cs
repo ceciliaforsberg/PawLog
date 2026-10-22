@@ -11,6 +11,7 @@ builder.Services.AddDbContext<PawLogDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<IDogService, DogService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
