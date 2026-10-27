@@ -26,21 +26,25 @@ I built PawLog as a portfolio project to deepen my skills in ASP.NET Core, Entit
 
 ```
 PawLog/
-├── PawLog.Api/       # Controllers, request/response records, startup
+├── PawLog.Api/       # Controllers, startup and configuration
+├── PawLog.Services/  # Business logic, DTOs (requests and responses), service interfaces
 ├── PawLog.Data/      # DbContext and EF Core migrations
 ├── PawLog.Models/    # Entity classes (Dog, Exercise, TrainingSession)
 └── pawlog-web/       # Angular frontend
 ```
 
-Dependencies point inwards: `Api` → `Data` → `Models`. `Models` does not depend on anything else.
+The backend follows a layered architecture: `Api` → `Services` → `Data` → `Models`. Each layer only depends on the layers below it.
 
 ## Design decisions
 
-- **Request and response records** – the API never exposes entities directly. Incoming data uses request records and outgoing data uses response records, organised by feature (`Requests/Exercises`, `Responses/Dogs` and so on).
+- **Request and response records** – the API never exposes entities directly. Incoming data uses request records and outgoing data uses response records, organised by feature (`Services/Requests/Exercises`, `Services/Responses/Dogs` and so on).
 - **Soft delete for exercises** – deleting an exercise archives it instead. Archived exercises are hidden from the list and can't be used in new sessions, but existing sessions keep them. `DeleteBehavior.Restrict` in the database acts as a safety net.
 - **Cascade delete for dogs** – deleting a dog also deletes its training sessions.
 - **Dependency injection** – the `DbContext` is injected into controllers, and services are injected into Angular components.
 - **Validation of relations** – creating or updating a session returns `400 Bad Request` if the dog or exercise doesn't exist, instead of a database error.
+- **Service layer** – controllers only handle HTTP. Business logic lives in services behind interfaces (e.g. `IExerciseService`), registered with dependency injection to keep the code testable.
+- **No repository layer** – EF Core's `DbContext` already acts as a repository (`DbSet`) and unit of work (`SaveChanges`), so services use it directly.
+- **ServiceResult** – services that can fail in more than one way return a `ServiceResult` that tells the controller whether the result was a success, not found or invalid. The controller maps it to the right status code.
 
 ## Getting started
 
@@ -94,7 +98,6 @@ Open `http://localhost:4200`.
 
 Planned work is tracked in [GitHub Issues](../../issues). Next up:
 
-- Move business logic from controllers to a service layer with interfaces
 - Input validation
 - Unit and integration tests (xUnit)
 - Authentication with ASP.NET Core Identity and JWT
