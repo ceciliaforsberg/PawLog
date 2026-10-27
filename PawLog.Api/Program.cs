@@ -12,6 +12,7 @@ builder.Services.AddDbContext<PawLogDbContext>(options =>
 
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
 builder.Services.AddScoped<IDogService, DogService>();
+builder.Services.AddScoped<ITrainingSessionService, TrainingSessionService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

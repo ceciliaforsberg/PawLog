@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PawLog.Api.Requests.TrainingSessions;
-using PawLog.Api.Responses.TrainingSessions;
-using PawLog.Data;
-using PawLog.Models;
+using PawLog.Services.Interfaces;
+using PawLog.Services.Results;
+using PawLog.Services.Requests.TrainingSessions;
+using PawLog.Services.Responses.TrainingSessions;
 
 namespace PawLog.Api.Controllers;
 
@@ -11,170 +10,48 @@ namespace PawLog.Api.Controllers;
 [Route("api/[controller]")]
 public class TrainingSessionsController: ControllerBase
 {
-    private readonly PawLogDbContext _context;
-    public TrainingSessionsController(PawLogDbContext context) => _context = context;
+    private readonly ITrainingSessionService _trainingSessionService;
+    public TrainingSessionsController(ITrainingSessionService trainingSessionService) => _trainingSessionService = trainingSessionService;
 
     [HttpGet]
     public async Task<ActionResult<TrainingSessionResponse>> GetAll([FromQuery] int? dogId)
     {
-        var query = _context.TrainingSessions.AsQueryable();
-
-        if(dogId != null)
-        {
-            query = query.Where(t => t.DogId == dogId);
-        }
-
-        var sessions = await query
-            .OrderByDescending(s => s.Date)
-            .Select(s => new TrainingSessionResponse(
-                s.Id, 
-                s.Date, 
-                s.Repetitions, 
-                s.Reward, 
-                s.Rating, 
-                s.Notes, 
-                s.DogId, 
-                s.Dog.Name, 
-                s.ExerciseId, 
-                s.Exercise.Name))
-            .ToArrayAsync();
-        return Ok(sessions);
+        return Ok(await _trainingSessionService.GetAllAsync(dogId));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<TrainingSessionResponse>> GetById(int id)
     {
-        var session = await _context.TrainingSessions
-            .Where(s => s.Id == id)
-            .Select(s => new TrainingSessionResponse(
-                s.Id, 
-                s.Date, 
-                s.Repetitions, 
-                s.Reward, 
-                s.Rating, 
-                s.Notes, 
-                s.DogId, 
-                s.Dog.Name, 
-                s.ExerciseId, 
-                s.Exercise.Name))
-            .FirstOrDefaultAsync();
-
-        if (session == null)
-        {
-            return NotFound();
-        }   
-
-        return Ok(session);
+        var session = await _trainingSessionService.GetByIdAsync(id);
+        return session is null ? NotFound() : Ok(session);
     }
 
     [HttpPost]
     public async Task<ActionResult<TrainingSessionResponse>> Create([FromBody] CreateTrainingSessionRequest request)
     {
-        var dog = await _context.Dogs.FindAsync(request.DogId);
-        if (dog == null)
-        {
-            return BadRequest($"Dog with ID {request.DogId} not found");
-        }
+        var created = await _trainingSessionService.CreateAsync(request);
+        if (!created.IsSuccess) return BadRequest(created.ErrorMessage);
 
-        var exercise = await _context.Exercises.FindAsync(request.ExerciseId);
-        if (exercise == null || exercise.IsArchived)
-        {
-            return BadRequest($"Exercise with ID {request.ExerciseId} not found");
-        }
-
-        var session = new TrainingSession
-        {
-            Date = request.Date,
-            Repetitions = request.Repetitions,
-            Reward = request.Reward,
-            Rating = request.Rating,
-            Notes = request.Notes,
-            Dog = dog,
-            Exercise = exercise
-        };
-
-        _context.TrainingSessions.Add(session);
-        await _context.SaveChangesAsync();
-
-        var response = new TrainingSessionResponse(
-            session.Id,
-            session.Date,
-            session.Repetitions,
-            session.Reward,
-            session.Rating,
-            session.Notes,
-            session.DogId,
-            session.Dog.Name,
-            session.ExerciseId,
-            session.Exercise.Name
-        );
-
-        return CreatedAtAction(nameof(GetById), new { id = session.Id }, response);
+        return CreatedAtAction(nameof(GetById), new { id = created.Value!.Id }, created.Value);
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<TrainingSessionResponse>> Update(int id, UpdateTrainingSessionRequest request)
     {
-        var session = await _context.TrainingSessions.FindAsync(id);
-        if (session == null)
+        var updated = await _trainingSessionService.UpdateAsync(id, request);
+        return updated.Error switch
         {
-            return NotFound();
-        }
-
-        var dog = await _context.Dogs.FindAsync(request.DogId);
-        if (dog == null)
-        {
-            return BadRequest($"Dog with ID {request.DogId} not found");
-        }
-
-        var exercise = await _context.Exercises.FindAsync(request.ExerciseId);
-        if (exercise == null)
-        {
-            return BadRequest($"Exercise with ID {request.ExerciseId} not found");
-        }
-
-        var isChangingExercise = exercise.Id != session.ExerciseId;
-        if (isChangingExercise && exercise.IsArchived)
-        {
-            return BadRequest($"Cannot change to archived exercise with ID {request.ExerciseId}");
-        }
-
-        session.Date = request.Date;
-        session.Repetitions = request.Repetitions;
-        session.Reward = request.Reward;
-        session.Rating = request.Rating;
-        session.Notes = request.Notes;
-        session.Dog = dog;
-        session.Exercise = exercise;
-
-        await _context.SaveChangesAsync();
-
-        var response = new TrainingSessionResponse(
-            session.Id,
-            session.Date,
-            session.Repetitions,
-            session.Reward,
-            session.Rating,
-            session.Notes,
-            session.DogId,
-            session.Dog.Name,
-            session.ExerciseId,
-            session.Exercise.Name
-        );
-
-        return Ok(response);
+            ServiceError.None => Ok(updated.Value),
+            ServiceError.NotFound => NotFound(updated.ErrorMessage),
+            _ => BadRequest(updated.ErrorMessage)
+        };
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        var session = await _context.TrainingSessions.FindAsync(id);
-        if (session == null)
-        {
-            return NotFound();
-        }
-        _context.TrainingSessions.Remove(session);
-        await _context.SaveChangesAsync();
-        return NoContent();
+        var deleted = await _trainingSessionService.DeleteAsync(id);
+        return deleted ? NoContent() : NotFound();
+
     }
 }
