@@ -4,16 +4,16 @@
         <div>
             <h1>PawLog</h1>
             <p class="tagline">Träningsdagboken för din hund</p>
-        </div>  
+        </div>
+
+        <nav>
+            <a routerLink="/training-sessions" routerLinkActive="active">Träningspass</a>
+            <a routerLink="/dogs" routerLinkActive="active">Hundar</a>
+            <a routerLink="exercises" routerLinkaActive="active">Övningar</a>
+        </nav>
     </div>
 </header>
 
 <main>
-    <section class="card">
-        <app-training-session-form (created)="list.load()"/>    
-    </section>
-
-    <section class="card">
-        <app-training-session-list #list/>
-    </section>
+    <router-outlet></router-outlet>
 </main>

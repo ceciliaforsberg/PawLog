@@ -1,0 +1,9 @@
+<div class="layout">
+    <section class="card">
+        <app-training-session-form (created)="list.load()" />
+    </section>
+
+    <section class="card">
+        <app-training-session-list #list />
+    </section>
+</div>

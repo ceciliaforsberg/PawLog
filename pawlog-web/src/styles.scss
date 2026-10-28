@@ -67,3 +67,11 @@ button {
     cursor: not-allowed;
   }
 }
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+}
